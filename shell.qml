@@ -1,9 +1,10 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import Quickshell.Hyprland
 
 ShellRoot {
-    PanelWindow{
+    PanelWindow {
         anchors {
             top: true
             left: true
@@ -11,40 +12,44 @@ ShellRoot {
         }
         implicitHeight: 30
         color: "#0B1D2F"
+        exclusionMode: ExclusionMode.Auto
 
-        RowLayout{
+        RowLayout {
             anchors.fill: parent
             anchors.leftMargin: 14
             anchors.rightMargin: 14
 
-            Text{
-                text: "workspaces:"
-                color: "#ffffff"
+            RowLayout {
+                spacing: 7
 
-                font{
-                    family: "Rubik"
-                    weight: 550
-                    letterSpacing:0
-                    pixelSize: 13
+                Repeater {
+                    model: 5
+
+                    Text {
+                        property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
+                        text: index + 1
+                        color: isActive ? "#39A2CA" : "#ffffff"
+                    }
                 }
             }
 
             Item {
                 Layout.fillWidth: true
             }
+
             Text {
                 text: Qt.formatDateTime(clock.date, "hh:mm")
-                color: '#ffffff'
+                color: "#ffffff"
 
-                font{
+                font {
                     family: "Rubik"
                     weight: 550
-                    letterSpacing:0
+                    letterSpacing: 0
                     pixelSize: 13
                 }
             }
         }
-        
+
         SystemClock {
             id: clock
             precision: SystemClock.Minutes

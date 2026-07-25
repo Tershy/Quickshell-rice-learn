@@ -2,7 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Hyprland
-import Quickshell.Services.UPower 
+import Quickshell.Services.UPower
 
 ShellRoot {
     PanelWindow {
@@ -24,11 +24,11 @@ ShellRoot {
                 spacing: 7
 
                 Repeater {
-                    model: 5
+                    model: 9
 
                     Text {
                         property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
-                        text: index + 1
+                        text: "  "
                         color: isActive ? "#39A2CA" : "#ffffff"
                     }
                 }
@@ -37,7 +37,6 @@ ShellRoot {
             Item {
                 Layout.fillWidth: true
             }
-            
 
             Item {
                 id: batteryWidget
@@ -47,34 +46,34 @@ ShellRoot {
                 property var battery: UPower.displayDevice
                 property real pct: battery.percentage * 100
 
-
                 function batteryColor() {
                     if (battery.state === UPowerDeviceState.Charging)
-                        return "#39A2CA"
+                        return "#39A2CA";
                     if (pct > 70)
-                        return "#5FA85B"
+                        return "#5FA85B";
                     if (pct > 50)
-                        return "#D9C24A"
+                        return "#D9C24A";
                     if (pct > 20)
-                        return "#D98A3D"
-                    return "#C0392B"
+                        return "#D98A3D";
+                    return "#C0392B";
                 }
-
 
                 Text {
                     id: batteryText
-                    text:"󰁹 " + Math.round(batteryWidget.pct) + "%"
+                    text: "󰁹 " + Math.round(batteryWidget.pct) + "%"
                     color: batteryWidget.batteryColor()
 
                     font {
-                    family: "Rubik"
-                    weight: 550
-                    letterSpacing: 0
-                    pixelSize: 13
-                }
+                        family: "Rubik"
+                        weight: 550
+                        letterSpacing: 0
+                        pixelSize: 13
+                    }
                 }
             }
-            Item { Layout.preferredWidth: 16 }
+            Item {
+                Layout.preferredWidth: 16
+            }
 
             Text {
                 text: Qt.formatDateTime(clock.date, "hh:mm")

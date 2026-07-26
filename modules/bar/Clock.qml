@@ -1,8 +1,5 @@
 // modules/bar/Clock.qml
-//
-// SystemClock musi zostać W TYM SAMYM pliku co Text, który go używa,
-// bo `clock.date` odwołuje się do niego po id — trzymamy je razem jak
-// w oryginale, tylko w osobnym pliku od reszty paska.
+
 import Quickshell
 import QtQuick
 import qs.config

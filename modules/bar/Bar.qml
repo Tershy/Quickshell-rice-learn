@@ -1,13 +1,4 @@
 // modules/bar/Bar.qml
-//
-// To jest dokładnie ten sam PanelWindow co miałeś w shell.qml, tylko:
-// - workspace pills, battery, i zegar są teraz osobnymi komponentami
-//   (Workspaces, Battery, Clock) zamiast kodu wpisanego bezpośrednio tutaj
-// - kolor tła paska idzie z Colors.base zamiast "#0B1D2F"
-//
-// Zauważ: NIE importujemy osobno Workspaces/Battery/Clock — importujemy
-// cały moduł `qs.modules.bar`, a QML samo znajduje pliki po nazwie
-// (skoro nazwa pliku = nazwa typu). To ta sama zasada co przy Colors.
 
 import QtQuick
 import QtQuick.Layouts

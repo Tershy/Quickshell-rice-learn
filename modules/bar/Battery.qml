@@ -1,9 +1,4 @@
 // modules/bar/Battery.qml
-//
-// To samo co miałeś w shell.qml, tylko:
-// 1. wyjęte do osobnego pliku
-// 2. kolory podmienione na Colors.green/yellow/orange/red zamiast
-//    surowych hexów — wybrałeś wersję z palety po porównaniu obu
 
 import QtQuick
 import Quickshell.Services.UPower

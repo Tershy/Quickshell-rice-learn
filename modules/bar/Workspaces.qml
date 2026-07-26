@@ -1,8 +1,4 @@
 // modules/bar/Workspaces.qml
-//
-// Dokładnie ten sam kod co w Twoim obecnym shell.qml — tylko wyjęty do
-// osobnego pliku. Zachowanie się NIE zmienia, zmienia się tylko to,
-// gdzie ten kod fizycznie leży.
 
 import QtQuick
 import QtQuick.Layouts

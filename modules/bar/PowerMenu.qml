@@ -43,6 +43,7 @@ PopupWindow {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
+                    console.log("LOCK CLICKED");
                     lockProcess.running = true;
                     root.visible = false;
                 }
@@ -62,13 +63,15 @@ PopupWindow {
             }
             Process {
                 id: logoutProcess
-                command: ["hyprshutdown"]
+                //command: ["hyprshutdown", "--vt", "2"]
+                command: ["/home/tershy/.local/share/quickshell-lockscreen/lock.sh"]
             }
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    lockProcess.running = true;
+                    console.log("LOGOUT CLICKED");
+                    logoutProcess.running = true;
                     root.visible = false;
                 }
             }
@@ -94,7 +97,8 @@ PopupWindow {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    lockProcess.running = true;
+                    console.log("REBOOT CLICKED");
+                    rebootProcess.running = true;
                     root.visible = false;
                 }
             }
@@ -120,7 +124,8 @@ PopupWindow {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
-                    lockProcess.running = true;
+                    console.log("SHUTDOWN CLICKED");
+                    poweroffProcess.running = true;
                     root.visible = false;
                 }
             }

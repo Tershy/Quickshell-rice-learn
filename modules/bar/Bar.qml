@@ -7,6 +7,8 @@ import qs.config
 import qs.modules.bar
 
 PanelWindow {
+    id: bar
+
     anchors {
         top: true
         left: true
@@ -34,5 +36,23 @@ PanelWindow {
         }
 
         Clock {}
+
+        Item {
+            Layout.preferredWidth: 16
+        }
+
+        PowerMenuButton {
+            id: powerButton
+            onClicked: {
+                powerMenu.anchor.window = bar;
+                powerMenu.anchor.rect.x = powerButton.x;
+                powerMenu.anchor.rect.y = bar.implicitHeight;
+                powerMenu.visible = !powerMenu.visible;
+            }
+        }
+
+        PowerMenu {
+            id: powerMenu
+        }
     }
 }

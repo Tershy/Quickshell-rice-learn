@@ -15,6 +15,10 @@ RowLayout {
             property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
             text: "  "
             color: isActive ? Colors.sky : Colors.text
+
+            font {
+                weight: isActive ? "600" : "400"
+            }
         }
     }
 }

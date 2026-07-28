@@ -30,8 +30,8 @@ Item {
         color: root.batteryColor()
 
         font {
-            family: "Rubik"
-            weight: 550
+            family: "Maple Mono NF"
+            weight: 650
             letterSpacing: 0
             pixelSize: 13
         }

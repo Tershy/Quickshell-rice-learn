@@ -14,7 +14,7 @@ Item {
     Text {
         id: powerText
         text: "󰐥"
-        font.family: "JetBrainsMono Nerd Font"
+        font.family: "Maple Mono NF"
         color: Colors.red
         font.pixelSize: 14
         font.weight: 600

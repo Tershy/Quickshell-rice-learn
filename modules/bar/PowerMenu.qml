@@ -10,6 +10,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.config
+import Quickshell.Wayland
 
 PopupWindow {
     id: root

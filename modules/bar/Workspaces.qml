@@ -19,10 +19,10 @@ RowLayout {
             property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
 
             implicitWidth: label.implicitWidth + 14
-            implicitHeight: 22
+            implicitHeight: label.implicitHeight
             radius: 6
 
-            color: isActive ? "#345779" : (ws ? "#0C304C" : "transparent")
+            color: isActive ? Colors.overlay : (ws ? Colors.surface0 : "transparent")
 
             Behavior on color {
                 ColorAnimation {

@@ -3,7 +3,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import qs.config
+//import qs.config
 import qs.modules.bar
 
 PanelWindow {
@@ -20,10 +20,12 @@ PanelWindow {
 
     RowLayout {
         anchors.fill: parent
-        anchors.leftMargin: 14
-        anchors.rightMargin: 14
+        anchors.leftMargin: 5
+        anchors.rightMargin: 5
 
-        Workspaces {}
+        Pill {
+            Workspaces {}
+        }
 
         Item {
             Layout.fillWidth: true
@@ -34,7 +36,7 @@ PanelWindow {
         }
 
         Item {
-            Layout.preferredWidth: 16
+            Layout.preferredWidth: 2
         }
 
         Pill {
@@ -42,7 +44,7 @@ PanelWindow {
         }
 
         Item {
-            Layout.preferredWidth: 16
+            Layout.preferredWidth: 2
         }
 
         Pill {

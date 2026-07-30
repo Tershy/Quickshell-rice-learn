@@ -15,7 +15,7 @@ PanelWindow {
         right: true
     }
     implicitHeight: 30
-    color: Colors.base
+    color: "transparent" // bar sam w sobie jest niewidzialny — widać tylko pigułki
     exclusionMode: ExclusionMode.Auto
 
     RowLayout {
@@ -29,25 +29,38 @@ PanelWindow {
             Layout.fillWidth: true
         }
 
-        Battery {}
+        Pill {
+            Battery {}
+        }
 
         Item {
             Layout.preferredWidth: 16
         }
 
-        Clock {}
+        Pill {
+            Clock {}
+        }
 
         Item {
             Layout.preferredWidth: 16
         }
 
-        PowerMenuButton {
-            id: powerButton
-            onClicked: {
-                powerMenu.anchor.window = bar;
-                powerMenu.anchor.rect.x = powerButton.x;
-                powerMenu.anchor.rect.y = bar.implicitHeight;
-                powerMenu.visible = !powerMenu.visible;
+        Pill {
+            id: powerPill
+
+            PowerMenuButton {
+                id: powerButton
+                onClicked: {
+                    // powerButton.x byłby lokalny względem Pill (rodzica),
+                    // nie względem bar — mapToItem przelicza współrzędne
+                    // z układu jednego Item na układ innego, niezależnie
+                    // od tego jak głęboko jest zagnieżdżony.
+                    const pos = powerPill.mapToItem(bar.contentItem, 0, 0);
+                    powerMenu.anchor.window = bar;
+                    powerMenu.anchor.rect.x = pos.x;
+                    powerMenu.anchor.rect.y = bar.implicitHeight;
+                    powerMenu.visible = !powerMenu.visible;
+                }
             }
         }
 

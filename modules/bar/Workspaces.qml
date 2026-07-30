@@ -9,7 +9,7 @@ RowLayout {
     spacing: 7
 
     Repeater {
-        model: 10
+        model: 9
 
         Rectangle {
             id: wsButton
@@ -18,11 +18,11 @@ RowLayout {
             property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
             property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
 
-            implicitWidth: label.implicitWidth + 10
-            implicitHeight: 24
-            radius: 12
+            implicitWidth: label.implicitWidth + 14
+            implicitHeight: 22
+            radius: 6
 
-            color: isActive ? Colors.surface0 : (ws ? Colors.surface0 : "transparent")
+            color: isActive ? "#345779" : (ws ? "#0C304C" : "transparent")
 
             Behavior on color {
                 ColorAnimation {
@@ -33,9 +33,9 @@ RowLayout {
                 id: label
                 anchors.centerIn: parent
                 // 
-                //text: wsButton.index + 1
-                text: ""
-                color: wsButton.isActive ? Colors.sky : (wsButton ? Colors.text : Colors.surface0)
+                text: wsButton.index + 1
+                //text: ""
+                color: wsButton.isActive ? Colors.sky : (wsButton ? Colors.text : "#0C304C")
 
                 font {
                     family: "Maple Mono NF"

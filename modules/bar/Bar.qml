@@ -3,7 +3,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-//import qs.config
 import qs.modules.bar
 
 PanelWindow {
@@ -15,59 +14,61 @@ PanelWindow {
         right: true
     }
     implicitHeight: 30
-    color: "transparent" // bar sam w sobie jest niewidzialny — widać tylko pigułki
+    color: "transparent"
     exclusionMode: ExclusionMode.Auto
 
-    RowLayout {
+    Item {
         anchors.fill: parent
         anchors.leftMargin: 5
         anchors.rightMargin: 5
 
+        //LEFT SIDE
+        RowLayout {
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+
+            Pill {
+                Workspaces {}
+            }
+        }
+        //CENTER
         Pill {
-            Workspaces {}
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        Pill {
-            Battery {}
-        }
-
-        Item {
-            Layout.preferredWidth: 2
-        }
-
-        Pill {
+            id: clockPill
+            anchors.centerIn: parent
             Clock {}
         }
 
-        Item {
-            Layout.preferredWidth: 2
-        }
+        //RIGHT SIDE
+        RowLayout {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 20
+            Pill {
+                Battery {}
+            }
 
-        Pill {
-            id: powerPill
+            Pill {
+                SystemTray {}
+            }
 
-            PowerMenuButton {
-                id: powerButton
-                onClicked: {
-                    // powerButton.x byłby lokalny względem Pill (rodzica),
-                    // nie względem bar — mapToItem przelicza współrzędne
-                    // z układu jednego Item na układ innego, niezależnie
-                    // od tego jak głęboko jest zagnieżdżony.
-                    const pos = powerPill.mapToItem(bar.contentItem, 0, 0);
-                    powerMenu.anchor.window = bar;
-                    powerMenu.anchor.rect.x = pos.x;
-                    powerMenu.anchor.rect.y = bar.implicitHeight;
-                    powerMenu.visible = !powerMenu.visible;
+            Pill {
+                id: powerPill
+
+                PowerMenuButton {
+                    id: powerButton
+                    onClicked: {
+                        const pos = powerPill.mapToItem(bar.contentItem, 0, 0);
+                        powerMenu.anchor.window = bar;
+                        powerMenu.anchor.rect.x = pos.x;
+                        powerMenu.anchor.rect.y = bar.implicitHeight;
+                        powerMenu.visible = !powerMenu.visible;
+                    }
                 }
             }
-        }
 
-        PowerMenu {
-            id: powerMenu
+            PowerMenu {
+                id: powerMenu
+            }
         }
     }
 }

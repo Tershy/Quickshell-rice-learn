@@ -42,7 +42,11 @@ PanelWindow {
         RowLayout {
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            spacing: 15
+            spacing: 10
+
+            Pill {
+                Network {}
+            }
             Pill {
                 Volume {}
             }

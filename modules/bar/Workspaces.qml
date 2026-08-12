@@ -1,52 +1,86 @@
 // modules/bar/Workspaces.qml
 
 import QtQuick
-import QtQuick.Layouts
 import Quickshell.Hyprland
 import qs.config
 
-RowLayout {
-    spacing: 7
+Row {
+    id: wsRow
+    spacing: 7 // The Row natively manages the spacing between visible items
 
     Repeater {
-        model: 9
+        model: 10 // Pre-allocate up to 10 workspaces. Adjust if you use more.
 
-        Rectangle {
-            id: wsButton
+        Item {
+            id: wsWrapper
             required property int index
+            property int wsId: index + 1
 
-            property var ws: Hyprland.workspaces.values.find(w => w.id === index + 1)
-            property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
+            // Constantly check if this specific workspace ID currently exists in Hyprland
+            property var ws: Hyprland.workspaces.values.find(w => w.id === wsId)
 
-            implicitWidth: label.implicitWidth + 14
-            implicitHeight: label.implicitHeight
-            radius: 6
+            property bool isActive: Hyprland.focusedWorkspace?.id === wsId
+            property bool exists: ws !== undefined
 
-            color: isActive ? Colors.overlay : (ws ? Colors.surface0 : "transparent")
+            // The Roll-out Magic:
+            // If the workspace exists, target the full width. If it is closed, target 0.
+            width: exists ? (label.implicitWidth + 14) : 0
+            height: label.implicitHeight
 
-            Behavior on color {
-                ColorAnimation {
-                    duration: 150
+            // Hide entirely once the width hits 0 so the Row collapses the 7px spacing seamlessly
+            visible: width > 0
+            opacity: exists ? 1 : 0
+
+            // Crucial: Keeps the button visually contained while the wrapper width shrinks/grows
+            clip: true
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.OutQuart
                 }
             }
-            Text {
-                id: label
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 200
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            // The actual visual indicator
+            Rectangle {
+                id: wsButton
                 anchors.centerIn: parent
-                // 
-                text: wsButton.index + 1
-                //text: ""
-                color: wsButton.isActive ? Colors.sky : (wsButton ? Colors.text : "#0C304C")
+                width: label.implicitWidth + 14
+                height: label.implicitHeight
+                radius: 6
 
-                font {
-                    family: "Maple Mono NF"
-                    pixelSize: 14
-                    weight: 500
+                color: isActive ? Colors.overlay : Colors.surface0
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
                 }
-            }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (parent.index + 1) + "})")
+                Text {
+                    id: label
+                    anchors.centerIn: parent
+                    text: wsWrapper.wsId
+                    color: wsWrapper.isActive ? Colors.sky : Colors.text
+
+                    font {
+                        family: "Maple Mono NF"
+                        pixelSize: 14
+                        weight: 500
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    // Standard Hyprland command to jump to the workspace
+                    onClicked: Hyprland.dispatch("workspace " + wsWrapper.wsId)
+                }
             }
         }
     }

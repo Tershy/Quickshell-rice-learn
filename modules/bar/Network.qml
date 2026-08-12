@@ -26,7 +26,7 @@ RowLayout {
 
     Text {
         text: root.icon
-        color: Networking.wifiEnabled ? Colors.red : Colors.surface1
+        color: Networking.wifiEnabled ? Colors.mauve : Colors.surface1
 
         font {
             family: "Maple Mono NF"

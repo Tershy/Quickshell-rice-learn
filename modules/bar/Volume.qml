@@ -51,7 +51,7 @@ RowLayout {
             return root.vol + "%";
         }
 
-        color: root.muted ? Colors.orange : Colors.brightYellow
+        color: root.muted ? Colors.red : Colors.text
 
         font {
             family: "Maple Mono NF"

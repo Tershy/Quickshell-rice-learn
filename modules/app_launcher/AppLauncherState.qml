@@ -1,9 +1,11 @@
-import Singleton
+// modules/app_launcher/AppLauncherState.qml
+
+pragma Singleton
+import Quickshell
 import QtQuick
 import QtCore
-import Quickshell
 
-QtObject {
+Singleton {
     id: root
 
     property bool launcherVisible: false
@@ -21,11 +23,13 @@ QtObject {
     function toggle() {
         launcherVisible = !launcherVisible;
     }
+
     function show() {
-        launcherVisible: true;
+        launcherVisible = true;
     }
+
     function hide() {
-        launcherVisible: false;
+        launcherVisible = false;
     }
 
     function recordLaunch(id) {
@@ -43,7 +47,7 @@ QtObject {
         _settings.recentIdsSerialized = JSON.stringify(list);
     }
 
-    function cleanRecents() {
+    function clearRecents() {
         recentIds = [];
         _settings.recentIdsSerialized = "[]";
     }

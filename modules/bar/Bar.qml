@@ -3,6 +3,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import qs.config
 import qs.modules.bar
 
 PanelWindow {
@@ -13,8 +14,8 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 30
-    color: "transparent"
+    implicitHeight: 32
+    color: Colors.base
     exclusionMode: ExclusionMode.Auto
 
     Item {

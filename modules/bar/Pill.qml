@@ -16,7 +16,7 @@ Rectangle {
     implicitHeight: contentRow.implicitHeight + verticalPadding * 2
 
     radius: implicitHeight / 2
-    color: Colors.base
+    color: Colors.surface0
 
     Row {
         id: contentRow

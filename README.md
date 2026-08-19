@@ -34,9 +34,7 @@ Personal Project built on my spare laptop where i installed arch + hyprland. Not
 - **Color system** (`config/Colors.qml`) — "Japanese Navy" palette, 17 colors, `pragma Singleton`, available everywhere as `Colors.name`.
 - **In progress:** a dynamic theme switcher built on matugen — a wallpaper generates `colors.json`, Quickshell reads it via `FileView` + `JsonAdapter`, and `Colors.qml` is meant to act as a facade mapping Material You names to semantic palette names, so downstream components don't need changes.
 
-The full architecture, decisions, and **known pitfalls** (things that have already bitten me once) live in [`AGENTS.md`](./AGENTS.md) — that's a working file, also read by AI agents operating in this repo, so it's more detailed and technical than this README.
-
-## On the horizon
+## TODO
 
 - [ ] Power plan control via `Quickshell.Services.UPower` `PowerProfiles`
 - [ ] A custom lockscreen (`ext-session-lock-v1`), written from scratch, conceptually inspired by [Darkkal44/qylock](https://github.com/Darkkal44/qylock)

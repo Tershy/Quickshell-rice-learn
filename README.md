@@ -17,7 +17,14 @@ Personal Project built on my spare laptop where i installed arch + hyprland. Not
 | Palette generator | matugen  |
 | Bootloader | Limine |
 
-Hardware: Dell Vostro 3580 — Intel i5-8265U, AMD Radeon R5 M435 (discrete) + Intel UHD 620 (integrated), 7.62GB RAM. Low RAM is a real design constraint, not just a footnote — hence things like `Loader`/`LazyLoader` for rarely-visible popups, and the decision against shader-based borders.
+
+## Specs
+
+| Dell Vostro 3580 | Hardware | 
+|---|---|
+| CPU | Intel i5-8265U |
+| GPU | AMD Radeon R5 M435 (discrete) + Intel UHD 620 (integrated) |
+| RAM | 8GB | 
 
 ## What's built
 

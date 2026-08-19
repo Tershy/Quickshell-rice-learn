@@ -7,87 +7,151 @@ Context file for AI agents working in this repository. Read this before making c
 Tershy is building a custom desktop environment on Arch Linux from scratch — with full understanding of every component, not by copying pre-made dotfiles. The primary goal is **learning** Quickshell, Hyprland, and Arch Linux internals through hands-on building. Repo: `Tershy/Quickshell-rice-learn`.
 
 **Working style — read this before generating code:**
-- Explain *why*, not just *what*. Concepts and sources before or alongside code, never bare files to copy blindly.
-- When asked to simplify or narrow scope, comply immediately without pushback.
-- Verify real system state before changes (`pacman -Ql`, `grep`, `fc-list`, `efibootmgr -v`, etc.) rather than assuming.
-- Backup before deletion, never after.
-- Work on topic branches; open PRs via GitHub rather than local `git merge`.
-- **When building multi-file features, explicitly wire components together — do not duplicate logic inline "just in case." If a component is extracted into its own file, reference it, don't reimplement it.** (See Known Pitfalls below for why this rule exists.)
+- **Explain *why*, not just *what*.** Concepts, mechanics, and documentation references ([quickshell.org/docs/v0.3.0](https://quickshell.org/docs/v0.3.0)) before or alongside code, never bare files or snippets without context.
+- **Complete, copy-paste-ready code.** Never provide incomplete snippets with `// ...` shortcuts.
+- **When asked to simplify or narrow scope, comply immediately without pushback.** Prototyping and simpler architectures win whenever requested.
+- **Verify real system state before changes** (`pacman -Ql`, `grep`, `fc-list`, `git status`, etc.) rather than assuming.
+- **Backup / commit before risky operations**, never after.
+- **Work on topic branches**; open PRs via GitHub rather than local `git merge`.
+- **When building multi-file features, explicitly wire components together.** If a component is extracted into its own file, reference and import it; do not duplicate logic inline "just in case." (See Known Pitfalls below.)
+- **Language:** Communicate with Tershy in Polish; keep technical identifiers, types, links, and code in English.
+
+---
 
 ## Hardware
 
-Dell Vostro 3580 — Intel Core i5-8265U (8 threads @ 3.90GHz), AMD Radeon R5 M435 (dedicated), Intel UHD 620 (integrated), 237GB btrfs, 7.62GB RAM.
+Dell Vostro 3580:
+- **CPU:** Intel Core i5-8265U (8 threads @ 3.90GHz)
+- **GPU:** AMD Radeon R5 M435 (discrete) + Intel UHD 620 (integrated)
+- **Storage & FS:** 237GB btrfs + Snapper + `limine-snapper-sync` + Limine bootloader
+- **RAM:** **7.62GB RAM** (shared with local worker pools/Hermes)
 
-Low RAM is a real constraint: avoid source-built AUR packages where `-bin` variants exist (OOM risk), and be conservative with concurrent processes (e.g. multi-agent delegation concurrency) on this machine.
+**Low RAM is a real constraint:**
+- Prefer `Loader` / `LazyLoader` for infrequently shown UI elements (popups, launchers, menus).
+- Avoid source-built AUR packages where `-bin` variants exist (OOM compilation risk).
+- Avoid GPU-heavy shaders (plain `Rectangle border` over custom fragment shaders).
+
+---
 
 ## Stack
 
-- Arch Linux + Hyprland 0.56.0 (config in Lua: `hyprland.lua`, not hyprlang)
-- kitty + fish + VS Code + Quickshell
-- Browser: Zen (qutebrowser and impala both evaluated and not used for browsing)
-- Network: iwd + impala (working)
-- Display manager: SDDM
-- Filesystem: btrfs + Snapper + limine-snapper-sync + Limine bootloader
+- **Arch Linux (rolling release)** + **Hyprland 0.56.0** (config in Lua: `hyprland.lua`, not hyprlang; main layout: `scrolling`)
+- **Quickshell v0.3.0** (Qt6 language server: `/usr/bin/qmlls6`, formatter: `Delgan.qml-format` / `qmlformat`)
+- **kitty** (opacity 0.6, font: `Maple Mono NF`) + **fish** (theme: `japanese-navy.theme`, `starship`) + **VS Code / VSCodium**
+- **Browser:** Zen Browser
+- **Network:** iwd + `impala` / `wlctl` (native Quickshell `Networking` service)
+- **Audio:** PipeWire (`Quickshell.Services.Pipewire` + `wpctl` / `pavucontrol`)
+- **Wallpaper & Theming:** `awww` (`awww-daemon`) + **Matugen 4.1.0** (Material You palette generation)
+- **Display manager & Session:** SDDM + custom `lock.sh` (`~/.local/share/quickshell-lockscreen/lock.sh`)
 
-## Color system
+---
 
-"Japanese Navy" palette — 17 colors (5 backgrounds, 3 text tones, 9 accents + 8 terminal variants), singleton `Colors.qml` in `config/`, accessed by name (`Colors.red`, `Colors.sky`, etc.). Reference doc: `japanese-navy-palette.md`. Colors are derived mathematically (hue rotation, fixed lightness/saturation) — never picked by eye.
+## Color system & Typography
 
-## Current architecture (Quickshell bar)
+### Palette ("Japanese Navy")
+17 mathematically derived colors (5 backgrounds: `crust`, `base`, `surface0`, `surface1`, `overlay`; 3 text tones: `subtext0`, `subtext1`, `text`; 9 accents: `red`, `orange`, `yellow`, `green`, `teal`, `sky`, `blue`, `pink`, `mauve` + bright terminal variants). Reference: `config/Colors.qml`.
 
-Modular structure, refactored off `main`:
+### Dynamic Theme Switcher Architecture (Matugen)
+- `matugen` generates `config/generated/colors.json` from `~/.config/matugen/templates/quickshell-colors.json.template`.
+- **Facade pattern:** `Colors.qml` (`pragma Singleton`, `Quickshell.Io.FileView` + `JsonAdapter` with `watchChanges: true`) dynamically maps Material You keys (`primary`, `surface`, etc.) to semantic palette properties (`Colors.sky`, `Colors.base`, etc.) with fallback defaults.
+- Downstream modules remain unchanged and completely agnostic to Matugen.
+- **Exception:** `Battery.qml` keeps static warning colors locally (`statusCritical`, `statusWarning`, `statusOk`) — battery thresholds represent safety/system status, not branding, and must remain identifiable regardless of wallpaper.
 
-- **`Bar.qml`** — top-level `PanelWindow` (top-anchored, `ExclusionMode.Auto`, `implicitHeight: 30`, transparent background — visual weight comes from `Pill` wrappers around each module, not the bar itself)
-- **`Workspaces.qml`** — 10-workspace repeater, pill-style indicators (Rectangle, radius 15, height 24) with tri-state appearance (active/occupied/empty) via `Hyprland.workspaces.values.find`, animated `Behavior on color` (150ms), clickable via `Hyprland.dispatch("hl.dsp.focus(...)")`
-- **`Battery.qml`** — `UPower.displayDevice.percentage`, color-coded via `batteryColor()` (charging=blue, then green/yellow/orange/red by threshold). Tooltip for time-remaining was deliberately removed — **do not re-add without asking**.
-- **`Clock.qml`** — `SystemClock` (minute precision) via `Qt.formatDateTime`. Requires explicit `import Quickshell` in this file even though parent imports it — QML imports are per-file, never inherited.
-- **`PowerMenu.qml` + `PowerMenuButton.qml`** — power menu via `PopupWindow` + `Quickshell.Io.Process` calling systemctl/loginctl/hyprlock. Logout uses a custom script (`~/.local/share/quickshell-lockscreen/lock.sh`) rather than `hyprshutdown`, to avoid a black-screen bug on logout.
-- **`SystemTray.qml`** — standalone `Quickshell.Services.SystemTray` component: hover-highlighted icons, left-click activates, right-click opens context menu if `modelData.hasMenu`. **Must be referenced from `Bar.qml` as `SystemTray {}`, not reimplemented inline** — see Known Pitfalls.
-- **`ScreenFrame.qml`** — decorative screen border as a `PanelWindow` with a `Rectangle border` (shader-based version was rejected — see Known Pitfalls)
+### Fonts
+- **`Maple Mono NF`** is the standard font for all Quickshell UI text and icons (ensures full Nerd Font glyph coverage; `Rubik` is not used for bar icons due to missing glyphs).
 
-Theme is consistent across kitty (ANSI slots), fish (`.theme` files), fastfetch (inline escape syntax), and Hyprland (plain hex accepted in Lua config).
+---
 
-## Known pitfalls (learned the hard way — don't repeat)
+## Current architecture (Quickshell modules)
 
-- **QML imports are per-file.** A child file omitting `import Quickshell` fails even if the parent imports it.
-- **Verify property names against `quickshell.org/docs/v0.3.0`, not v0.1.0.** Caught via `exclusionZone` vs `exclusionMode` mismatch.
-- **Shader-based borders are extremely GPU-expensive.** A plain `Rectangle border` is sufficient — don't reach for shaders on this hardware.
-- **Hyprland's Lua config accepts plain hex** (`"#39A2CA"`), not just `rgba()` packed format.
-- **Fish built-in themes are compiled into the binary** (`__fish_theme_cat <name>`); user themes are `.theme` files in `~/.config/fish/themes/`, looked up by filename, not the `# name:` header inside the file.
-- **Fastfetch only requires `##` inside format strings for hex colors** — a single `#` is fine outside them.
-- **`LIMINE_CONF_PATH` is an undocumented, maintainer-discouraged workaround variable.** Limine has its own auto-discovery; don't reintroduce this.
-- **Qt6 binaries are suffixed `6` on Arch** (`qmlls6`, not `qmlls`).
-- **mkinitcpio hook is `btrfs-overlayfs`, not `sd-btrfs-overlayfs`**, for non-systemd-style hook lists (`base udev ...`).
-- **A model (or a rushed pass) can duplicate a component inline instead of referencing the standalone file it already built**, silently losing an import along the way (e.g. `Colors.overlay` used without `import qs.config`). When building multi-file features, always do a final pass confirming every extracted component is actually *referenced* somewhere, not just present in the repo. Concretely: a `SystemTray.qml` component was built correctly but `Bar.qml` reimplemented the same tray logic inline instead of using it, and the inline copy was missing the `qs.config` import that the standalone version had — a real bug caught only by explicit review, not by anything failing loudly at parse time.
+Modular layout in `~/.config/quickshell/`:
+
+- **`shell.qml`** — `ShellRoot` entry point. Instantiates `Bar {}`, `AppLauncher {}`, and hosts `IpcHandler` (`target: "launcher"`, functions with explicit `: void` return types).
+- **`config/Colors.qml`** — Singleton palette / facade.
+- **`modules/bar/`**:
+  - **`Bar.qml`** — `PanelWindow` (top-anchored, `implicitHeight: 32`, `color: Colors.base`, `ExclusionMode.Auto`). Visual structure organized into left, center, and right `RowLayout` groups.
+  - **`Pill.qml`** — Reusable rounded wrapper (`Rectangle`, `radius: implicitHeight / 2`, `color: Colors.surface0`) for bar items.
+  - **`Workspaces.qml`** — 10-workspace repeater with animated roll-out/collapse (`Behavior on width` / `opacity` based on `exists`), `Hyprland.workspaces.values.find(...)`, and click-to-focus `Hyprland.dispatch("workspace ...")`.
+  - **`Battery.qml`** — `UPower.displayDevice`, Nerd Font icons, static warning colors.
+  - **`Clock.qml`** — `SystemClock` (`SystemClock.Minutes`) formatted via `Qt.formatDateTime`.
+  - **`Network.qml`** — `Quickshell.Networking`, dynamic WiFi signal icon tiers, click to launch `kitty -e wlctl`.
+  - **`Volume.qml`** — `Quickshell.Services.Pipewire` + `PwObjectTracker`. LPM launches `pavucontrol`, PPM toggles `wpctl set-mute`.
+  - **`SystemTray.qml`** — `Quickshell.Services.SystemTray` with hover highlight, LPM activation, and PPM context menu (`modelData.display()`).
+  - **`PowerMenuButton.qml` + `PowerMenu.qml`** — `PopupWindow` positioned relative to the bar; executes `hyprlock`, `lock.sh`, `systemctl reboot`, or `systemctl poweroff` via `Quickshell.Io.Process`.
+- **`modules/app_launcher/`**:
+  - **`AppLauncherState.qml`** — `Singleton` tracking visibility and persistent recent launches (`recentIds`) via `QtCore.Settings`.
+  - **`AppLauncher.qml`** — `PanelWindow` on `WlrLayer.Overlay` (`WlrKeyboardFocus.OnDemand`), slide translation animation, fuzzy search across `DesktopEntries.applications.values` (name, genericName, keywords), keyboard navigation (`Keys.onPressed`), and `Quickshell.iconPath(..., true)` with letter fallback.
+- **`modules/wallpaper/`**:
+  - **`WallpaperState.qml`** — `Singleton` scanning `~/Pictures/Wallpapers` via `find`, triggering `awww` and `matugen image <path> --source-color-index 0`.
+- **`modules/border/`**:
+  - **`Border.qml`** — Screen frame panels (`Variants` over `Quickshell.screens` with `PanelWindow` for bottom, left, right borders on `WlrLayer.Bottom`).
+- **`modules/components/`**:
+  - **`ConcaveCurves.qml`** — Reusable inward curved corners (`Shape` + `PathArc` with `CurveRenderer`) for organic bar-to-border transitions (inspired by `caelestia-shell`).
+- **`modules/notifications/`**:
+  - **`Notifications.qml`** — `NotificationServer` and top-right `PanelWindow` overlay (in development).
+
+---
+
+## Known pitfalls & hard-learned lessons
+
+- **QML imports are strictly per-file.** A child file omitting `import Quickshell` or `import qs.config` fails even if the parent imports it.
+- **Always verify APIs against `quickshell.org/docs/v0.3.0`**, never v0.1.0 or generic memory (e.g. `exclusionMode` vs `exclusionZone`).
+- **Never duplicate logic inline when a standalone component exists.** Reference it directly (e.g. `SystemTray {}`).
+- **`pragma Singleton` requires `Quickshell.Singleton {}`** (not bare `QtObject`) for reloadable singletons.
+- **`childrenRect` causes binding loops in Quickshell.** Use `Row`, `Column`, or `Layouts` to calculate sizes.
+- **`forceActiveFocus()` on `TextInput` requires `Qt.callLater()`** when invoked in the same frame that `visible` becomes `true`.
+- **`Quickshell.iconPath(name, true)` returns empty string for missing icons**, allowing letter fallback (`image://icon/` returns an error placeholder instead of failing gracefully).
+- **`IpcHandler` methods require explicit return types** (`function toggle(): void`).
+- **Matugen 4.x requires `--source-color-index 0`** in non-interactive CLI calls to prevent blocking on stdin color picker.
+- **Hyprland's Lua config accepts plain hex** (`"#39A2CA"`), not just packed `rgba()`.
+- **Fish themes are loaded from `.theme` files** in `~/.config/fish/themes/` by filename, not the `# name:` header.
+- **Qt6 binaries on Arch are suffixed `6`** (`qmlls6`, `qmlformat6`).
+- **Shader borders are GPU-prohibitive** on this hardware; use `Rectangle border`.
+
+---
 
 ## Multi-agent / delegation setup (Hermes-side)
 
-Hermes is configured for delegated subagent work via `delegate_task`, separate from the primary conversational model:
+- **Primary / orchestrator model:** `nvidia/nemotron-3-super-120b-a12b`
+- **Delegate model:** `nvidia/nemotron-3-nano-30b-a3b`
+- **`max_concurrent_children`: 2** (low RAM constraint and NIM pool saturation protection).
+- **Delegation rule:** Multi-file architectural tasks must be split into **explicit, separate, ordered child tasks** to avoid inline-duplication bugs.
 
-- **Primary/orchestrator model**: `nvidia/nemotron-3-super-120b-a12b` (confirmed working, ~35 tok/s observed)
-- **Delegate model**: `nvidia/nemotron-3-nano-30b-a3b` (confirmed working; chosen over `llama-3.3-nemotron-super-49b-v1` after a head-to-head test — the smaller reasoning-enabled nano model gave a correct, reasoning-transparent answer about Quickshell's `PanelWindow`, while the larger non-reasoning 49B model confidently hallucinated an incorrect answer by analogy to generic Qt/QML)
-- **`max_concurrent_children`: 2** (not the default 3) — deliberately reduced given 7.62GB RAM and the observation that even single-request calls to the primary model can hit shared-worker-pool saturation (`503 ResourceExhausted`) on NVIDIA's free tier; running concurrent subagents multiplies exposure to that.
-- `nvidia/llama-3.1-nemotron-ultra-253b-v1` is catalog-listed but **not actually invokable on this account** (confirmed via direct curl — 404 on the resolved backend function, despite appearing in `/v1/models`). Don't reach for it as a fallback model without re-testing.
-- Lesson for future delegation tasks: multi-file architectural work (e.g. "build component X, then wire it into file Y") should be given to delegation as **explicit, separate, ordered child tasks** rather than one open-ended task — this is believed to reduce the inline-duplication failure mode described above, though not yet re-tested.
+---
 
 ## On the horizon (open items)
 
-1. Power plan control via `Quickshell.Services.UPower` PowerProfiles
-2. Own lockscreen in Quickshell (`ext-session-lock-v1` protocol), conceptually inspired by `Darkkal44/qylock` but written from scratch, not copied
-3. Multi-monitor support for the bar — deferred until an external monitor is acquired; `import Quickshell` was added early to `Workspaces.qml` in anticipation of this (`Quickshell.screens`)
-4. Re-test the "explicit ordered subtasks" delegation pattern against the SystemTray-style duplication bug, to confirm it actually prevents recurrence
+1. **Screen Frame & Concave Corners (`Border.qml` + `ConcaveCurves.qml` inspired by `caelestia-shell`):**
+   - Fix `exclusiveZone` $\rightarrow$ `exclusionMode` (v0.3.0 API compliance) in `Border.qml`.
+   - Add missing `borderThickness` and `cornerRadius` properties to `Bar.qml` to fix binding errors.
+   - Refine `ConcaveCurves.qml` arc geometry, mirroring, and anchors for seamless corners where the bar meets screen borders.
+2. **Matugen dynamic theming pipeline completion:**
+   - Connect `config/generated/colors.json` to `config/Colors.qml` using `FileView` + `JsonAdapter` (`watchChanges: true`).
+   - Fix `awww` command and `--source-color-index 0` in `modules/wallpaper/WallpaperState.qml`.
+   - Add Matugen templates for Hyprland borders (`decorations.lua`) and Kitty (`kitty.conf`).
+3. **Wallpaper Picker UI:** Build a visual selector/grid for `WallpaperState.wallpapers`.
+4. **Notifications module (`modules/notifications/Notifications.qml`):** Complete `NotificationServer` layout and dismiss interactions.
+5. **Power plan control:** Integration via `Quickshell.Services.UPower` `PowerProfiles`.
+6. **Custom Lockscreen in Quickshell:** Using `ext-session-lock-v1` protocol, written from scratch (conceptual reference: `Darkkal44/qylock`).
+7. **Multi-monitor support for the bar:** Deferred until external monitor connection.
+8. **Starship prompt segment styling:** Diagnose rounded capsule glyph alignment (deferred).
+9. **Hermes multi-agent delegation test:** Verify "explicit ordered subtasks" against code duplication.
+
+---
 
 ## Completed
 
-- PR `refactor/modular-structure` → `main`, merged
-- Snapper snapshot boot test, done
-- Power menu implemented and working; fixed a bug where all 4 buttons (lock/logout/reboot/shutdown) called the same `lockProcess` instead of their own — fixed via correct references + `console.log` debugging
-- Logout switched from `hyprshutdown` to custom `lock.sh` script — confirmed working, no more black-screen-on-logout
-- Workspace pills redesigned from bare `Text` to tri-state animated pills, made clickable
-- Icon-based workspace indicators (verified Nerd Font glyphs) — done
-- Network stack decision: iwd + impala confirmed working; qutebrowser dropped in favor of Zen
-- Full Hermes backup restore performed and verified (state.db, 6 sessions, MEMORY.md, USER.md, config migrated v32→v33)
-- Multi-agent delegation configured and model-tested (see above)
+- Modular refactor of Quickshell bar and configs.
+- Snapper snapshot boot verification.
+- Power menu with dedicated processes per button and safe `lock.sh` logout.
+- Tri-state animated workspace roll-out indicators with clickable dispatch.
+- Integrated bar modules: Battery, Clock, Network (`wlctl`), Volume (`Pipewire` / `pavucontrol` / `wpctl`), SystemTray.
+- Encapsulated `Pill.qml` bar layout with transparent base.
+- Full `AppLauncher.qml` with MRU history persistence, keyboard navigation, and fuzzy search.
+- Hyprland 0.56.0 Lua configuration (`modules/*.lua`).
+- Terminal styling: Kitty 0.6 opacity + Japanese Navy theme, Fish theme, Fastfetch layout.
+- Initial Matugen 4.1.0 setup and `colors.json` template generation.
 
 ---
-*Last updated: 2026-07-30*
+*Last updated: 2026-08-20*
+

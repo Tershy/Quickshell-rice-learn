@@ -55,7 +55,7 @@ RowLayout {
     MouseArea {
         anchors.fill: parent
 
-        onClicked: Quickshell.execDetached(["kitty", "-e", "nmtui"])
+        onClicked: Quickshell.execDetached(["kitty", "-e", "wlctl"])
         cursorShape: Qt.PointingHandCursor
     }
 }

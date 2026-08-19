@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.config
 import qs.modules.bar
+import qs.modules.components
 
 PanelWindow {
     id: bar
@@ -77,6 +78,24 @@ PanelWindow {
             PowerMenu {
                 id: powerMenu
             }
+        }
+        ConcaveCurves {
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.leftMargin: bar.borderThickness + bar.height
+            radius: bar.cornerRadius
+            color: bar.color
+            isTop: true
+            z: 1
+        }
+        ConcaveCurves {
+            anchors.top: parent.bottom
+            anchors.left: parent.left
+            anchors.leftMargin: bar.borderThickness + bar.height
+            radius: bar.cornerRadius
+            color: bar.color
+            isTop: false
+            z: 1
         }
     }
 }

@@ -2,10 +2,12 @@ import Quickshell
 import Quickshell.Io
 import qs.modules.bar
 import qs.modules.app_launcher
+import qs.modules.border
 
 ShellRoot {
     Bar {}
     AppLauncher {}
+    Border{}
 
     IpcHandler {
         target: "launcher" // musi być unikalne w całej konfiguracji
